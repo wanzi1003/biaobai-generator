@@ -90,6 +90,8 @@
 </div>
 
 <script>
+const API_KEY = 'sk-iylyjchrofvlujhujgifammpwkeboafmfkpgfhqgvbcfkpbg';
+
 async function generate() {
   const name = document.getElementById('name').value.trim();
   const traits = document.getElementById('traits').value.trim();
@@ -104,18 +106,27 @@ async function generate() {
   loading.style.display = 'block';
   result.style.display = 'none';
   copyBtn.style.display = 'none';
+  const prompt = `请帮我写一段${style}风格的表白文案。对象名字：${name}。ta的特点：${traits}。我们之间的小事：${memory || '暂无'}。要求：真诚自然，200字左右，不要太浮夸，像一个真实的人在说话。`;
   try {
-    const res = await fetch('/api/generate', {
+    const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, traits, memory, style })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1000
+      })
     });
     const data = await res.json();
-    result.textContent = data.text;
+    const text = data.choices?.[0]?.message?.content;
+    result.textContent = text || '生成失败，请重试';
     result.style.display = 'block';
     copyBtn.style.display = 'block';
   } catch(e) {
-    result.textContent = '生成失败，请稍后再试';
+    result.textContent = '生成失败，请重试';
     result.style.display = 'block';
   }
   btn.disabled = false;
