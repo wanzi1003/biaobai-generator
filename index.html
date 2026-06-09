@@ -15,18 +15,8 @@
     align-items: center;
     padding: 40px 16px;
   }
-  h1 {
-    font-size: 26px;
-    color: #d63384;
-    margin-bottom: 6px;
-    text-align: center;
-  }
-  .sub {
-    font-size: 14px;
-    color: #999;
-    margin-bottom: 32px;
-    text-align: center;
-  }
+  h1 { font-size: 26px; color: #d63384; margin-bottom: 6px; text-align: center; }
+  .sub { font-size: 14px; color: #999; margin-bottom: 32px; text-align: center; }
   .card {
     background: white;
     border-radius: 16px;
@@ -35,13 +25,7 @@
     max-width: 480px;
     box-shadow: 0 4px 24px rgba(214,51,132,0.08);
   }
-  label {
-    display: block;
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 6px;
-    margin-top: 16px;
-  }
+  label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; margin-top: 16px; }
   input, select, textarea {
     width: 100%;
     padding: 10px 14px;
@@ -49,12 +33,9 @@
     border-radius: 10px;
     font-size: 15px;
     outline: none;
-    transition: border 0.2s;
     font-family: inherit;
   }
-  input:focus, select:focus, textarea:focus {
-    border-color: #d63384;
-  }
+  input:focus, select:focus, textarea:focus { border-color: #d63384; }
   textarea { resize: vertical; min-height: 80px; }
   button {
     margin-top: 24px;
@@ -67,7 +48,6 @@
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s;
   }
   button:hover { background: #b5206a; }
   button:disabled { background: #f0a0c0; cursor: not-allowed; }
@@ -82,32 +62,20 @@
     white-space: pre-wrap;
     display: none;
   }
-  .copy-btn {
-    margin-top: 12px;
-    background: white;
-    color: #d63384;
-    border: 1.5px solid #d63384;
-    padding: 10px;
-    font-size: 14px;
-  }
-  .copy-btn:hover { background: #fff0f5; }
+  .copy-btn { margin-top: 12px; background: white; color: #d63384; border: 1.5px solid #d63384; padding: 10px; font-size: 14px; }
   .loading { text-align: center; color: #d63384; padding: 12px; display: none; }
 </style>
 </head>
 <body>
 <h1>💌 专属表白文案生成器</h1>
 <p class="sub">填写ta的特点，生成只属于你们的表白</p>
-
 <div class="card">
   <label>ta的名字或昵称</label>
   <input type="text" id="name" placeholder="比如：小美、阿杰…">
-
   <label>ta有哪些让你心动的特点</label>
   <textarea id="traits" placeholder="比如：笑起来很好看，喜欢看书，打篮球很帅…"></textarea>
-
   <label>你们之间有什么难忘的小事</label>
   <textarea id="memory" placeholder="比如：上次一起淋雨，ta把伞让给我…"></textarea>
-
   <label>表白风格</label>
   <select id="style">
     <option value="温柔浪漫">温柔浪漫</option>
@@ -115,9 +83,7 @@
     <option value="真诚直接">真诚直接</option>
     <option value="文艺深情">文艺深情</option>
   </select>
-
   <button onclick="generate()" id="btn">生成专属表白文案 💝</button>
-
   <div class="loading" id="loading">正在为你生成，稍等一秒…</div>
   <div class="result" id="result"></div>
   <button class="copy-btn" id="copyBtn" onclick="copyText()" style="display:none">复制文案</button>
@@ -129,57 +95,34 @@ async function generate() {
   const traits = document.getElementById('traits').value.trim();
   const memory = document.getElementById('memory').value.trim();
   const style = document.getElementById('style').value;
-
-  if (!name || !traits) {
-    alert('请至少填写名字和心动特点~');
-    return;
-  }
-
+  if (!name || !traits) { alert('请至少填写名字和心动特点~'); return; }
   const btn = document.getElementById('btn');
   const loading = document.getElementById('loading');
   const result = document.getElementById('result');
   const copyBtn = document.getElementById('copyBtn');
-
   btn.disabled = true;
   loading.style.display = 'block';
   result.style.display = 'none';
   copyBtn.style.display = 'none';
-
-  const prompt = `请帮我写一段${style}风格的表白文案。
-对象名字：${name}
-ta的特点：${traits}
-我们之间的小事：${memory || '暂无'}
-要求：真诚自然，200字左右，不要太浮夸，像一个真实的人在说话。`;
-
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      body: JSON.stringify({ name, traits, memory, style })
     });
-    const data = await response.json();
-    const text = data.content[0].text;
-    result.textContent = text;
+    const data = await res.json();
+    result.textContent = data.text;
     result.style.display = 'block';
     copyBtn.style.display = 'block';
-  } catch (e) {
+  } catch(e) {
     result.textContent = '生成失败，请稍后再试';
     result.style.display = 'block';
   }
-
   btn.disabled = false;
   loading.style.display = 'none';
 }
-
 function copyText() {
-  const text = document.getElementById('result').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    alert('已复制！');
-  });
+  navigator.clipboard.writeText(document.getElementById('result').textContent).then(() => alert('已复制！'));
 }
 </script>
 </body>
